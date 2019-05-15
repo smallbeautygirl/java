@@ -1,0 +1,15 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="B043040026_HW10:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/B043040026_HW10_jar</output-path>
+    <root id="archive" name="B043040026_HW10.jar">
+      <element id="module-output" name="B043040026_HW10" />
+      <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-stdlib.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-reflect.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-test.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-stdlib-jdk7.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$KOTLIN_BUNDLED$/lib/kotlin-stdlib-jdk8.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/mysql-connector-java-5.1.46.jar" path-in-jar="/" />
+      <element id="library" level="project" name="mysql-connector-java-5.1.46" />
+    </root>
+  </artifact>
+</component>
