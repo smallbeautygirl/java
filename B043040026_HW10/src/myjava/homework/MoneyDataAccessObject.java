@@ -9,42 +9,73 @@ import javax.sql.rowset.JdbcRowSet;
 
 public class MoneyDataAccessObject {
 
-    public void create(){
-
-    }
-
-    public void read(Money money){
-
-    }
-
-    public String update(Money money, JdbcRowSet rowSet){
-
-        String afterMoney=null;
-        String user=null;
-        String balance=null;
-        try {
-
+    public String create(Money money,JdbcRowSet rowSet) {
+        try{
             rowSet.setCommand("select * from money");
             rowSet.execute();
+            rowSet.moveToInsertRow();
+            rowSet.updateString("user",money.getUser());
+            rowSet.updateString("balance",money.getBalance());
+            rowSet.insertRow();
 
-            int index=1;
-            while (rowSet.next()) {
-                user= rowSet.getString("user");
-                balance = rowSet.getString("balance");
+            return "finish";
+        }catch (Exception E){
+            System.out.println(E.getMessage());
+            return "";
+        }
+    }
 
-                //若username 相符
-                if(money.getUser().equals(user)){
-                    rowSet.updateInt(index,Integer.parseInt(balance)+Integer.parseInt(money.getBalance()));
-                    break;
-                }
-                index++;
+    public String read(Money money,JdbcRowSet rowSet) {
+            try{
+                rowSet.setCommand("select * from money where user = \"" + money.getUser() + "\"");
+                rowSet.execute();
+
+                rowSet.first();//ou just set the pointer to the first record and go from there
+                String balance = rowSet.getString("balance");
+
+                return balance;
+            }catch (Exception E){
+                System.out.println(E.getMessage());
+                return "";
             }
+    }
+
+    public String update(Money money, JdbcRowSet rowSet, String action) {
+
+        String afterMoney = null;
+        String user = null;
+        String balance = null;
+        try {
+
+            rowSet.setCommand("select * from money where user = \"" + money.getUser() + "\"");
+            rowSet.execute();
+
+            rowSet.first();//ou just set the pointer to the first record and go from there
+            balance = rowSet.getString("balance");
+            System.out.println(balance);
+
+            if (action.equals("1")) {//若是存錢
+                rowSet.updateInt("balance", Integer.parseInt(balance) + Integer.parseInt(money.getBalance()));//在結果集中臨時修改
+                rowSet.updateRow();//更新到資料庫中
+                afterMoney = String.valueOf(Integer.parseInt(balance) + Integer.parseInt(money.getBalance()));
+            } else {//若是領錢
+                if(Integer.parseInt(balance)<Integer.parseInt(money.getBalance())){
+                    return "fail";
+                }
+                rowSet.updateInt("balance", Integer.parseInt(balance) - Integer.parseInt(money.getBalance()));//在結果集中臨時修改
+                rowSet.updateRow();//更新到資料庫中
+                afterMoney = String.valueOf(Integer.parseInt(balance) - Integer.parseInt(money.getBalance()));
+            }
+
+
+            System.out.println(afterMoney);
+            return afterMoney;
         } catch (Exception ex) {
-            System.out.println(ex);
+            System.out.println(ex.getMessage());
+            return "";
         }
 
-       afterMoney = String.valueOf(Integer.parseInt(balance)+Integer.parseInt(money.getBalance()));
-        return afterMoney;
+
     }
 
 

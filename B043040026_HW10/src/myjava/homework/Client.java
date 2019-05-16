@@ -17,10 +17,11 @@ public class Client extends ATM {
 
     @Override
     public void run() throws IOException {
-        this.processConnection();
-        this.getStreams();
-        while (true) {
-            try {
+        try {
+            this.processConnection();
+            this.getStreams();
+            while (true) {
+
                 System.out.print("(1).Sign In\n(2).Create New Account\n(3).Exit\n-------------------------\n");
                 Scanner keyboard = new Scanner(System.in);
                 String choice = null;//選擇
@@ -28,6 +29,7 @@ public class Client extends ATM {
                 String temppassword;//暫存password
                 boolean IsValidPassword;
                 String IsExist = null;
+                String createFinish = null;
 
                 choice = keyboard.next();//輸入選擇
                 this.sendData(choice);
@@ -35,7 +37,7 @@ public class Client extends ATM {
                 if (choice.equals("1")) {
                     System.out.println("Input your account");
                     account = keyboard.next();
-                    System.out.println(account);
+                    //System.out.println(account);
 
                     System.out.println("Input your password");
 
@@ -43,11 +45,90 @@ public class Client extends ATM {
                         IsValidPassword = true;
 
                         temppassword = keyboard.next();//輸入密碼
-                        System.out.println(temppassword);
+                        //System.out.println(temppassword);
 
+
+                        //判斷密碼是否是整數
+                        for (int i = 0; i < temppassword.length(); ++i) {
+
+                            if (temppassword.charAt(i) < 48 || temppassword.charAt(i) > 57) {
+                                IsValidPassword = false;
+                                System.out.println("password must integer,try again");
+                                break;
+                            }
+                        }
+
+                        if (IsValidPassword) {
+                            //判斷密碼是否為六位數
+                            if (temppassword.length() != 6) {
+                                IsValidPassword = false;
+                                System.out.println("password must consist of 6 digits,try again");
+                            }
+                        }
+                        if (IsValidPassword) {//若密碼格式正確，則傳帳戶給server和傳密碼給server驗證
+                            this.sendData(account);//傳帳戶給server
+                            this.sendData(temppassword);
+                            break;
+                        }
+                    }
+
+                    //若密碼正確
+                    if (dataInputStream.readUTF().equals("true")) {
+                        System.out.println("signed in");
+                        try {
+                            System.out.print("(1).Deposit Cash\n(2).Get Cash\n(3).Balance\n(4).Withdraw\n-------------------------\n");
+                            String action = null;
+                            String Depositmoney = null;
+                            String Withdrawmoney = null;
+                            String aftermoney = null;
+                            String balance = null;
+
+                            action = keyboard.next();
+                            this.sendData(action);
+
+                            if (action.equals("1")) {
+
+                                System.out.println("Input the amount of money you want to deposit");
+                                Depositmoney = keyboard.next();
+                                this.sendData(Depositmoney);
+                                aftermoney = this.dataInputStream.readUTF();
+
+                                System.out.println("Deposit $" + Depositmoney + ", $" + aftermoney + " is in your account");
+
+                            } else if (action.equals("2") || action.equals("4")) {
+                                System.out.println("Input the amount of money want to get");
+                                Withdrawmoney = keyboard.next();
+                                this.sendData(Withdrawmoney);
+                                aftermoney = this.dataInputStream.readUTF();
+
+                                if (aftermoney.equals("fail")) {
+                                    System.out.println("Get cash failed, no enough money");
+                                } else {
+                                    System.out.println("Get $" + Withdrawmoney + ", $" + aftermoney + " is in your account");
+                                }
+                            } else if (action.equals("3")) {
+                                balance = this.dataInputStream.readUTF();
+                                System.out.println("Balance: $" + balance + " is in your account");
+
+                            }
+                        } catch (Exception E) {
+                            System.out.println(E);
+                        }
+                    } else {
+                        System.out.println("Wrong username or password");
+                    }
+
+                } else if (choice.equals("2")) {
+                    System.out.println("Input your account");
+                    account = keyboard.next();
+                    System.out.println("Input your password");
+                    temppassword = keyboard.next();
+
+                    while (true) {//檢查並且讓使用整輸入正確的密碼格式
+                        IsValidPassword = true;
 
                         //判斷密碼是否為六位數
-                        if (temppassword.length() > 6) {
+                        if (temppassword.length() != 6) {
                             IsValidPassword = false;
                             System.out.println("password must consist of 6 digits,try again");
                         }
@@ -69,43 +150,25 @@ public class Client extends ATM {
                             this.sendData(temppassword);
                             break;
                         }
+
+                        temppassword = keyboard.next();//輸入密碼
                     }
 
-                    //若密碼正確
-                    if (dataInputStream.readUTF().equals("true")) {
-                        System.out.println("signed in");
-                            try {
-                                System.out.print("(1).Deposit Cash\n(2).Get Cash\n(3).Balance\n(4).Withdraw\n-------------------------\n");
-                                String action=null;
-                                String Depositmoney=null;
+                    //check此帳戶是否已經存在
+                    IsExist = this.dataInputStream.readUTF();
 
-                                action = keyboard.next();
-                                this.sendData(action);
-
-                                if(action.equals("1")){
-                                    String aftermoney=null;
-                                    System.out.println("Input the amount of money you want to deposit");
-                                    Depositmoney = keyboard.next();
-                                    this.sendData(Depositmoney);
-                                    aftermoney = this.dataInputStream.readUTF();
-
-                                    System.out.println("Deposit $"+Depositmoney+", $"+aftermoney+" is in your account");
-
-                                }else if(action.equals("2")){
-
-                                }else if(action.equals("3")){
-
-                                }else if(action.equals("4")){
-
-                                }
-                            } catch (Exception E) {
-                                System.out.println(E);
-                            }
+                    if (IsExist.equals("true")) {
+                        System.out.println("account already existed");
                     } else {
-                        System.out.println("Wrong username or password");
+
+                        createFinish = this.dataInputStream.readUTF();
+                        if (createFinish.equals("finish")) {
+                            System.out.println("account established successfully");
+                        } else {
+                            System.out.println("account established failed");
+                        }
                     }
 
-                } else if (choice.equals("2")) {
 
                 } else if (choice.equals("3")) {
                     System.out.println("BYE!!");
@@ -115,9 +178,9 @@ public class Client extends ATM {
                     System.out.println("Please enter correct choice!!(1 or 2 or 3)");
                 }
 
-            } catch (Exception E) {
-                System.out.println("Failed to create client");
             }
+        } catch (Exception E) {
+            System.out.println("Failed to create client");
         }
     }
 

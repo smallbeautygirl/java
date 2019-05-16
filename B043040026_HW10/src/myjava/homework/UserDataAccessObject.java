@@ -12,8 +12,21 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 public class UserDataAccessObject {
-   public void create(User user){
+   public String create(User user,JdbcRowSet rowSet){
+       try {
 
+           rowSet.setCommand("select * from user");
+           rowSet.execute();
+           rowSet.moveToInsertRow();
+           rowSet.updateString("id",user.getId());
+           rowSet.updateString("password",user.getPassword());
+           rowSet.insertRow();
+
+           return "finish";
+       } catch (Exception ex) {
+           System.out.println(ex);
+           return "";
+       }
    }
 
    public String find(User user, JdbcRowSet rowSet){
